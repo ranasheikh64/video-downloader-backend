@@ -4,6 +4,7 @@ import yt_dlp
 import traceback
 
 class TikTokExtractor(BaseExtractor):
+    # Updated yt-dlp version to fix TikTok extraction
     def extract(self) -> VideoInfo:
         ydl_opts = {
             'quiet': True,
