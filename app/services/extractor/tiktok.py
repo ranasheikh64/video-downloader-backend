@@ -10,6 +10,10 @@ class TikTokExtractor(BaseExtractor):
             'quiet': True,
             'no_warnings': True,
             'format': 'bestvideo+bestaudio/best', 
+            'impersonate': 'chrome', # Bypasses TikTok blocking
+            'extractor_args': {
+                'tiktok': ['api_hostname=api16-normal-c-useast1a.tiktokv.com']
+            },
         }
         
         try:

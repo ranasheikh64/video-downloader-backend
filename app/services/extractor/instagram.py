@@ -9,6 +9,7 @@ class InstagramExtractor(BaseExtractor):
             'quiet': True,
             'no_warnings': True,
             'format': 'bestvideo+bestaudio/best', 
+            'impersonate': 'chrome', # Bypasses Instagram blocking
         }
         
         try:
