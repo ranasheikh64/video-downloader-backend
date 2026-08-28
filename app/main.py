@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 
-app = FastAPI(title="Video Downloader API")
+app = FastAPI(title="Jronix Video Downloader API")
 
 app.add_middleware(
     CORSMiddleware,
