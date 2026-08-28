@@ -23,27 +23,29 @@ class FacebookExtractor(BaseExtractor):
                 
                 video_formats = []
                 for f in formats:
-                    # Filter out formats that don't have video or are just audio (unless we want to support audio only later)
-                    if f.get('vcodec') != 'none' and f.get('url'):
-                         # Many platforms return separate video/audio streams. 
-                         # yt-dlp provides 'format_id' and 'format_note' which helps in identifying quality.
-                         # For a simple downloader, we try to find formats that have both video and audio, or fallback to video-only if we plan to merge later.
-                         # Since we are not doing FFmpeg merging in backend phase 1, let's try to get pre-merged formats (acodec != 'none')
+                    # Require BOTH video and audio to avoid silent DASH streams
+                    if f.get('vcodec') != 'none' and f.get('acodec') != 'none' and f.get('url'):
+                         height = f.get('height')
+                         format_id = f.get('format_id', '').lower()
+                         format_note = f.get('format_note', '')
                          
-                         quality_note = f.get('format_note') or f.get('resolution') or f.get('height')
-                         if not quality_note:
-                             quality_note = 'SD'
-                         elif isinstance(quality_note, int):
-                             quality_note = f"{quality_note}p"
+                         if height:
+                             quality = f"{height}p"
+                         elif 'hd' in format_id or 'hd' in format_note.lower():
+                             quality = 'HD'
+                         elif 'sd' in format_id or 'sd' in format_note.lower():
+                             quality = 'SD'
+                         else:
+                             quality = format_note if format_note else 'Normal'
                              
-                         # basic heuristic: if acodec is none, it's video without sound
-                         # for now let's just include ones with both, or if the platform only provides separated streams, 
-                         # we might need to rely on the 'url' that yt-dlp resolves for 'best'
-                         
+                         # Clean up quality string
+                         if 'DASH' in quality:
+                             continue # Skip DASH if it somehow slipped through
+                             
                          video_formats.append(
                              VideoFormat(
-                                 quality=str(quality_note),
-                                 resolution=str(f.get('height', 'unknown')) + 'p',
+                                 quality=str(quality),
+                                 resolution=str(height) + 'p' if height else 'unknown',
                                  url=f.get('url'),
                                  ext=f.get('ext', 'mp4')
                              )

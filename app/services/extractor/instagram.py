@@ -22,17 +22,28 @@ class InstagramExtractor(BaseExtractor):
                 
                 video_formats = []
                 for f in formats:
-                    if f.get('vcodec') != 'none' and f.get('url'):
-                         quality_note = f.get('format_note') or f.get('resolution') or f.get('height')
-                         if not quality_note:
-                             quality_note = 'SD'
-                         elif isinstance(quality_note, int):
-                             quality_note = f"{quality_note}p"
+                    # Require BOTH video and audio to avoid silent DASH streams
+                    if f.get('vcodec') != 'none' and f.get('acodec') != 'none' and f.get('url'):
+                         height = f.get('height')
+                         format_id = f.get('format_id', '').lower()
+                         format_note = f.get('format_note', '')
+                         
+                         if height:
+                             quality = f"{height}p"
+                         elif 'hd' in format_id or 'hd' in format_note.lower():
+                             quality = 'HD'
+                         elif 'sd' in format_id or 'sd' in format_note.lower():
+                             quality = 'SD'
+                         else:
+                             quality = format_note if format_note else 'Normal'
+                             
+                         if 'DASH' in quality:
+                             continue
                              
                          video_formats.append(
                              VideoFormat(
-                                 quality=str(quality_note),
-                                 resolution=str(f.get('height', 'unknown')) + 'p',
+                                 quality=str(quality),
+                                 resolution=str(height) + 'p' if height else 'unknown',
                                  url=f.get('url'),
                                  ext=f.get('ext', 'mp4')
                              )
